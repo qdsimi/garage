@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Garázs">
+<meta name="theme-color" content="#0f1117">
+<title>Garázs</title>
+<style>
+:root{--surface-0:#0f1117;--surface-1:#1a1d26;--surface-2:#151821;--border:#2a2e3a;--border-strong:#3a3f4d;--border-stronger:#6a7080;--text-primary:#eceef3;--text-secondary:#9aa0ad;--text-accent:#6fb1ff;--text-danger:#ff6b6b;--text-success:#7fd36b;--bg-success:#1f3a1a;--bg-warning:#3a2e10;--text-warning:#f0c050;--border-success:#3f7a2e;--font-voice:Georgia,serif;--font-mono:ui-monospace,Menlo,monospace;--radius:8px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--surface-0);color:var(--text-primary);font-family:-apple-system,system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.g{font-size:14px;max-width:480px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom))}
+.card{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;margin:8px 0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border)}
+.mut{color:var(--text-secondary);font-size:13px}
+.big{font-size:16px;font-weight:500}
+.m{background:var(--surface-1);border-radius:var(--radius);padding:8px 10px}
+.m b{display:block;font-size:18px;font-weight:500}
+button{min-height:44px;background:transparent;color:var(--text-primary);border:1px solid var(--border-strong);border-radius:var(--radius);padding:8px 12px;font:inherit;font-size:14px}
+button:active{background:var(--surface-1)}
+.nv button.on{background:var(--surface-1);border-color:var(--border-stronger)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+textarea{background:var(--surface-1);color:var(--text-primary);border:1px solid var(--border);border-radius:var(--radius);padding:8px;-webkit-user-select:text;user-select:text}
+</style>
+</head>
+<body>
+<div class="g">
+<div class="g2"><div class="m"><span class="mut">Pénz</span><b id="tMoney">-</b></div><div class="m"><span class="mut">Idő</span><b id="tDay" style="font-size:15px">-</b></div></div>
+<div class="nv g2" style="margin-top:8px"><button id="n-garazs" onclick="nav('garazs')">Garázs</button><button id="n-verseny" onclick="nav('verseny')">Versenyek</button><button id="n-bolt" onclick="nav('bolt')">Autókereskedés</button><button id="n-mentes" onclick="nav('mentes')">Mentés</button></div>
+<div id="msg" style="font-size:13px;min-height:18px;margin-top:6px;color:var(--text-accent)"></div>
+<div id="main"></div>
+</div>
+<script>
+const PARTS=[{k:'motor',n:'Motor',d:'+22 LE szintenként',c:8000},{k:'turbo',n:'Turbó',d:'+30 LE szintenként',c:20000},{k:'valto',n:'Váltó',d:'gyorsabb váltás, 2. szinttől 6 fokozat',c:10000},{k:'gumi',n:'Gumi',d:'jobb tapadás a rajtnál',c:6000},{k:'suly',n:'Súlycsökkentés',d:'-55 kg szintenként',c:12000},{k:'nitro',n:'Nitró',d:'2,5 mp-es löket, szintenként erősebb',c:15000}];
+const CARS=[{n:'Öreg kupé',hp:70,w:1150,price:0,col:'#B4532A'},{n:'Japán ferdehátú',hp:130,w:1040,price:600000,col:'#378ADD'},{n:'Hátsókerekes legenda',hp:220,w:1200,price:2500000,col:'#E24B4A'}];
+const RCOL=['#639922','#7F77DD','#D4537E'];
+const CH=[{t:'1. fejezet: A rozsdás örökség',s:'Nagyapád rád hagyta a garázsát. A ponyva alatt egy öreg kupé áll, alig indul, a motor köhög. A szomszéd Pisti kiröhög, hogy ezzel a roncsal sosem fogsz versenyezni. Javítsd meg, melózz, tuningolj, és mutasd meg neki.',r:[['Szomszéd Pisti',68,1150,20000,.5],['Futár Bence',90,1100,35000,.6],['Kockás Laci',115,1050,70000,.7]]},{t:'2. fejezet: Az ipari park',s:'Laci a vereség után elhívott a péntek éjszakai futamokra a régi ipari parkba. Itt már pénz forog, és a srácok komolyabb gépekkel jönnek. Azt mondják, Tokyo Tomi még sosem kapott ki.',r:[['Zsolti',140,1060,90000,.65],['Az ikrek',165,1020,140000,.7],['Tokyo Tomi',205,980,280000,.8]]},{t:'3. fejezet: A reptéri drag',s:'Tomi elvitt a lezárt kifutópályára, ahol a város legjobbjai mérik össze magukat. A háttérből valaki figyel: a Banda emberei új tehetséget keresnek.',r:[['Viki',250,1000,320000,.75],['Bálint',290,1040,480000,.8],['Gumifüst Gergő',350,990,950000,.85]]},{t:'4. fejezet: A Banda',s:'Meghívót kaptál a Banda zártkörű versenyére. Ha legyőzöd a Királyt, a te neved lesz a legenda, és nagyapád garázsa lesz a város leghíresebb műhelye.',r:[['Ördög',420,1040,1300000,.85],['Szellem',480,960,1900000,.9],['A Király',540,980,5000000,.93]]}];
+const END={t:'Legenda lettél',s:'Legyőzted a Királyt. Az egész város nagyapád garázsáról beszél. A kupé, amivel kezdted, díszhelyen áll a fal mellett. A futamokat bármikor újra futhatod, és tovább gyűjtheted az autókat.'};
+const GR5=[3.4,2.1,1.5,1.15,0.92],GR6=[3.4,2.1,1.5,1.15,0.92,0.78];
+const BLD=Array.from({length:14},(_,i)=>({x:i*45+Math.random()*20,w:18+Math.random()*20,h:12+Math.random()*26}));
+const DEF=()=>({money:15000,day:1,ch:0,beat:[],cars:[{id:0,p:{motor:0,turbo:0,valto:0,gumi:0,suly:0,nitro:0},cond:70}],act:0,done:false,intro:false});
+function load(){try{const d=localStorage.getItem('gz1');if(d)return JSON.parse(d)}catch(e){}return null}
+function save(){try{localStorage.setItem('gz1',JSON.stringify(S))}catch(e){}}
+let S=load()||DEF(),R=null,resetArm=false;
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n).toLocaleString('hu-HU')+' Ft';
+const car=()=>S.cars[S.act];
+function flash(t){$('msg').textContent=t;clearTimeout(flash.h);flash.h=setTimeout(()=>{$('msg').textContent=''},3000)}
+function top(){$('tMoney').textContent=fmt(S.money);$('tDay').textContent=S.day+'. nap · '+(S.ch+1)+'. fejezet';save()}
+function stats(c){const b=CARS[c.id],p=c.p;return{hp:b.hp+p.motor*22+p.turbo*30,m:b.w-p.suly*55,grip:0.75+0.07*p.gumi,shift:Math.max(0.1,0.38-0.055*p.valto),gears:p.valto>=2?6:5,nitro:p.nitro,mult:0.55+0.45*c.cond/100}}
+function nav(v){R=null;resetArm=false;['garazs','verseny','bolt','mentes'].forEach(k=>$('n-'+k).classList.toggle('on',k==v));({garazs:vGarage,verseny:vRaces,bolt:vShop,mentes:vSave})[v]();top();window.scrollTo(0,0)}
+function rr(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(Math.round(x),Math.round(y),w,h)}
+function drawCar(c,x,y,col,t,spoiler,nt){
+if(nt>0){rr(c,x-6,y-6,6,2,'#5ab0ff');rr(c,x-3,y-6,3,2,'#ffffff')}
+rr(c,x,y-7,32,5,col);
+if(t==1){rr(c,x+5,y-12,16,5,col);rr(c,x+7,y-11,12,3,'#9fd3ff')}else if(t==2){rr(c,x+6,y-11,12,4,col);rr(c,x+8,y-10,8,2,'#9fd3ff');rr(c,x+18,y-8,12,1,'#00000055')}else{rr(c,x+8,y-12,13,5,col);rr(c,x+10,y-11,9,3,'#9fd3ff')}
+if(spoiler||t==2){rr(c,x,y-11,2,4,'#222');rr(c,x,y-11,6,1,'#222')}
+rr(c,x+4,y-3,6,6,'#111');rr(c,x+22,y-3,6,6,'#111');rr(c,x+6,y-1,2,2,'#999');rr(c,x+24,y-1,2,2,'#999');
+rr(c,x+31,y-6,1,2,'#ffe680');rr(c,x,y-6,1,2,'#ff4040')}
+function vStory(i){const t=i=='end'?END:CH[i];$('main').innerHTML=`<div class="card"><div class="big" style="margin-bottom:6px">${t.t}</div><div style="line-height:1.7;font-family:var(--font-voice)">${t.s}</div><button style="margin-top:12px;width:100%" onclick="nav('${i=='end'?'verseny':'garazs'}')">Irány a garázs</button></div>`}
+function vGarage(){const c=car(),b=CARS[c.id],st=stats(c),rc=Math.round((100-c.cond)*250*(1+c.id)/100)*100,pay=8000+S.ch*6000;
+let h=`<div class="card"><canvas id="gcv" width="240" height="64" style="width:100%;image-rendering:pixelated;border-radius:8px;display:block"></canvas><div class="big" style="margin:8px 0">${b.n}</div><div class="g2"><div class="m"><span class="mut">Teljesítmény</span><b>${st.hp} LE</b></div><div class="m"><span class="mut">Tömeg</span><b>${st.m} kg</b></div><div class="m"><span class="mut">Állapot</span><b style="color:${c.cond<40?'var(--text-danger)':'var(--text-primary)'}">${Math.round(c.cond)}%</b></div><div class="m"><span class="mut">Fokozatok</span><b>${st.gears}</b></div></div><div class="row" style="margin-top:8px"><div><div>Javítás</div><div class="mut">A kopott autó kevesebbet ad le</div></div><button onclick="repair()">${c.cond>=99.5?'Hibátlan':fmt(rc)}</button></div></div><div class="card"><div class="big">Alkatrészek</div>`;
+PARTS.forEach(p=>{const l=c.p[p.k],cost=upCost(c,p,l);h+=`<div class="row"><div><div>${p.n} <span class="mut">${l}/5</span></div><div class="mut">${p.d}</div></div><button onclick="up('${p.k}')" style="white-space:nowrap">${l>=5?'Max':fmt(cost)}</button></div>`});
+h+=`</div><div class="card"><div class="row" style="border:0;padding:0"><div><div>Melózás a szervizben</div><div class="mut">+${fmt(pay)}, eltelik egy nap</div></div><button onclick="work()">Dolgozz</button></div></div>`;
+$('main').innerHTML=h;const g=$('gcv').getContext('2d');g.setTransform(2,0,0,2,0,0);g.imageSmoothingEnabled=false;rr(g,0,0,120,32,'#141826');rr(g,0,25,120,7,'#2a2d36');for(let i=0;i<6;i++)rr(g,6+i*20,4,12,8,'#1f2436');drawCar(g,44,24,b.col,c.id,c.p.turbo>=3,0)}
+function upCost(c,p,l){return Math.round(p.c*(l+1)**2*(1+0.5*c.id)/1000)*1000}
+function up(k){const c=car(),p=PARTS.find(x=>x.k==k),l=c.p[k];if(l>=5)return flash('Ez már a maximum.');const cost=upCost(c,p,l);if(S.money<cost)return flash('Nincs elég pénzed. Melózz vagy versenyezz.');S.money-=cost;c.p[k]++;flash(p.n+' fejlesztve: '+c.p[k]+'. szint');vGarage();top()}
+function repair(){const c=car(),rc=Math.round((100-c.cond)*250*(1+c.id)/100)*100;if(c.cond>=99.5)return;if(S.money<rc)return flash('Nincs elég pénzed a javításra.');S.money-=rc;c.cond=100;flash('Az autó újra hibátlan.');vGarage();top()}
+const JOBS=['Kicserélted egy taxi fékbetétjét.','Egész nap olajat cseréltél.','Kipufogót hegesztettél egy furgonra.','Egy nyugdíjas Ladáját hoztad rendbe.','Gumikat cseréltél télire.'];
+function work(){const pay=8000+S.ch*6000;S.money+=pay;S.day++;flash(JOBS[Math.floor(Math.random()*JOBS.length)]+' +'+fmt(pay));vGarage();top()}
+function vRaces(){let h='';if(S.done)h+=`<div class="card" style="border-color:var(--border-success)"><div class="big">Legenda vagy</div><div class="mut">Minden futam újrafuttatható pénzért.</div></div>`;
+for(let ci=S.ch;ci>=0;ci--){h+=`<div class="card"><div class="row" style="border:0;padding:0 0 4px"><span class="big">${CH[ci].t}</span><button onclick="vStory(${ci})">Sztori</button></div>`;
+CH[ci].r.forEach((r,ri)=>{const key=ci+'-'+ri,won=S.beat.includes(key),open=ri==0||S.beat.includes(ci+'-'+(ri-1));const prize=won?Math.round(r[3]*0.4/1000)*1000:r[3];
+h+=`<div class="row"><div><div>${r[0]}${ri==2?' <span style="font-size:12px;background:var(--bg-warning);color:var(--text-warning);padding:2px 8px;border-radius:var(--radius)">főnök</span>':''}${won?' <span style="color:var(--text-success)">✓</span>':''}</div><div class="mut">${r[1]} LE · ${r[2]} kg · ${fmt(prize)}</div></div>${open?`<button onclick="startRace(${ci},${ri})">Kihívás</button>`:'<span class="mut">Zárva</span>'}</div>`});h+='</div>'}
+$('main').innerHTML=h}
+function vShop(){let h='<div class="card"><div class="big">Autókereskedés</div><div class="mut">Az új autó alapból erősebb, de nulláról kell fejleszteni.</div>';
+CARS.forEach((b,i)=>{const oi=S.cars.findIndex(c=>c.id==i);let btn;if(oi==S.act)btn='<span class="mut">Ezt vezeted</span>';else if(oi>=0)btn=`<button onclick="setAct(${oi})">Kiválaszt</button>`;else btn=`<button onclick="buy(${i})">${fmt(b.price)}</button>`;
+h+=`<div class="row"><div><div>${b.n}</div><div class="mut">${b.hp} LE · ${b.w} kg alap</div></div>${btn}</div>`});$('main').innerHTML=h+'</div>'}
+function buy(i){const b=CARS[i];if(S.money<b.price)return flash('Erre még gyűjtened kell.');S.money-=b.price;S.cars.push({id:i,p:{motor:0,turbo:0,valto:0,gumi:0,suly:0,nitro:0},cond:100});S.act=S.cars.length-1;flash('Megvetted: '+b.n);vShop();top()}
+function setAct(i){S.act=+i;flash('Most ezt vezeted: '+CARS[car().id].n);vShop();top()}
+function vSave(){let code='';try{code=btoa(unescape(encodeURIComponent(JSON.stringify(S))))}catch(e){}
+$('main').innerHTML=`<div class="card"><div class="big">Mentési kód</div><div class="mut" style="margin:4px 0 8px">Az állás magától mentődik. Ez a kód biztonsági másolat, ha új telefonra költözöl.</div><textarea id="sc" readonly style="width:100%;height:70px;font-size:11px;font-family:var(--font-mono)">${code}</textarea><button style="margin-top:6px" onclick="cp()">Másolás</button></div><div class="card"><div class="big">Betöltés</div><textarea id="ld" oninput="$('lerr').textContent=''" placeholder="Illeszd be a mentési kódot" style="width:100%;height:70px;font-size:11px;font-family:var(--font-mono);margin-top:8px"></textarea><div id="lerr" style="font-size:13px;color:var(--text-danger)"></div><button style="margin-top:6px" onclick="imp()">Betöltés</button></div><div class="card"><button id="rst" onclick="rst()">Új játék kezdése</button></div>`}
+function cp(){const t=$('sc');t.select();try{navigator.clipboard.writeText(t.value).then(()=>flash('Kód kimásolva.'),()=>flash('Jelöld ki és másold kézzel.'))}catch(e){flash('Jelöld ki és másold kézzel.')}}
+function imp(){const v=$('ld').value.trim();if(!v){$('lerr').textContent='Előbb illessz be egy kódot.';return}try{const d=JSON.parse(decodeURIComponent(escape(atob(v))));if(!d.cars||typeof d.money!='number')throw 0;S=d;flash('Mentés betöltve.');nav('garazs')}catch(e){$('lerr').textContent='Ez a kód nem érvényes. Ellenőrizd, hogy az egészet bemásoltad.'}}
+function rst(){if(!resetArm){resetArm=true;$('rst').textContent='Biztos? Koppints újra';return}S=DEF();S.intro=true;vStory(0);top()}
+function mk(st){return Object.assign({},st,{v:0,x:0,g:0,sh:0,nt:0,cut:0,nUsed:false,on:false,rpm:1000})}
+function startRace(ci,ri){const c=car();if(c.cond<10)return flash('Az autó szétesik. Előbb javítsd meg.');const rv=CH[ci].r[ri],sk=rv[4];
+R={ci,ri,ph:'cd',cd:3,t:0,p:mk(stats(c)),o:mk({hp:rv[1],m:rv[2],grip:0.75+0.35*sk,shift:0.3,gears:6,nitro:0,mult:1}),sk,oR:0.5-0.3*sk+Math.random()*0.1,pR:null,pDone:null,oDone:null,fs:false,last:performance.now(),col:RCOL[ri]};R.o.sa=nsa();
+$('main').innerHTML=`<div class="card" style="padding:8px"><div class="mut" style="margin-bottom:6px">Te vs. ${rv[0]} · 402 m</div><canvas id="rcv" width="240" height="100" style="width:100%;image-rendering:pixelated;border-radius:8px;display:block"></canvas><div style="display:flex;justify-content:space-between;margin:8px 0 4px;font-size:13px"><span id="hG">1. fokozat</span><span id="hK">0 km/h</span><span id="hT">0.00 s</span></div><div style="position:relative;height:14px;background:var(--surface-1);border-radius:4px;overflow:hidden;border:1px solid var(--border)"><div style="position:absolute;left:89%;width:11%;top:0;bottom:0;background:var(--bg-success)"></div><div id="hR" style="position:absolute;left:0;top:0;bottom:0;width:0;background:var(--border-stronger)"></div></div><div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:10px"><button id="bM" style="min-height:72px;font-size:18px" onpointerdown="tapM(event)">Várj a zöldre</button><button id="bN" style="min-height:72px" onpointerdown="tapN(event)">Nitró${R.p.nitro?'':' (nincs)'}</button></div><div class="mut" style="margin-top:6px">Rajtnál csak zöldre nyomj gázt. Válts, amikor a fordulatszám a zöld sávban van.</div></div>`;
+requestAnimationFrame(loop)}
+function nsa(){return 5400+1400*R.sk+(Math.random()-.5)*500}
+function tapM(e){e.preventDefault();if(!R||R.ph=='end')return;const p=R.p;if(R.ph=='cd'){R.fs=true;return endR()}if(!p.on){p.on=true;R.pR=R.t;return}const G=p.gears==6?GR6:GR5;if(p.sh<=0&&p.g<G.length-1)p.sh=p.shift}
+function tapN(e){e.preventDefault();if(!R||R.ph!='go')return;const p=R.p;if(p.nitro>0&&!p.nUsed&&p.on){p.nt=2.5;p.nUsed=true}}
+function stepC(c,h){const G=c.gears==6?GR6:GR5;let rpm=Math.max(1000,c.v*G[c.g]*130.5);if(c.on&&c.g==0&&rpm<3200)rpm=3200;let F=0;if(c.cut>0)c.cut-=h;
+if(c.on&&c.sh<=0&&c.cut<=0){if(rpm>=6990)c.cut=0.12;else{const f=rpm/7000;let P=c.hp*745.7*c.mult*(0.25+1.5*f-0.8*f*f);if(c.nt>0)P*=1+0.15*c.nitro;F=Math.min(c.m*9.81*c.grip,P/Math.max(c.v,1.5))}}
+if(c.sh>0){c.sh-=h;if(c.sh<=0)c.g=Math.min(c.g+1,G.length-1)}if(c.nt>0)c.nt-=h;
+const a=(F-0.38*c.v*c.v-(c.v>0.1?0.015*c.m*9.81:0))/c.m;c.v=Math.max(0,c.v+a*h);c.x+=c.v*h;c.rpm=Math.min(7000,rpm)}
+function loop(now){if(!R||R.ph=='end')return;const dt=Math.min(0.05,(now-R.last)/1000);R.last=now;
+if(R.ph=='cd'){R.cd-=dt;if(R.cd<=0){R.ph='go';R.t=0}}else{for(let i=0;i<4;i++){const h=dt/4;R.t+=h;const o=R.o;if(!o.on&&R.t>=R.oR)o.on=true;if(o.on&&o.sh<=0&&o.g<5&&o.rpm>=o.sa){o.sh=o.shift;o.sa=nsa()}stepC(R.p,h);stepC(o,h);if(R.p.x>=402&&R.pDone==null)R.pDone=R.t;if(o.x>=402&&R.oDone==null)R.oDone=R.t}
+if((R.pDone!=null&&(R.oDone!=null||R.t>R.pDone+5))||(R.oDone!=null&&R.pDone==null&&R.t>R.oDone+(R.p.on?12:1.5)))return endR()}
+draw();hud();requestAnimationFrame(loop)}
+function hud(){const p=R.p;if(!$('hG'))return;$('hG').textContent=p.sh>0?'Váltás…':(p.g+1)+'. fokozat';$('hK').textContent=Math.round(p.v*3.6)+' km/h';$('hT').textContent=(R.ph=='go'?R.t:0).toFixed(2)+' s';$('hR').style.width=(p.on?p.rpm/70:14)+'%';$('bM').textContent=R.ph=='cd'?'Várj a zöldre':(p.on?'Váltás':'Gáz')}
+function draw(){const cv=$('rcv');if(!cv)return;const c=cv.getContext('2d'),p=R.p,o=R.o;c.imageSmoothingEnabled=false;rr(c,0,0,240,100,'#141826');
+BLD.forEach((b,i)=>{const sx=((b.x-p.x*1.5)%630+630)%630-40;rr(c,sx,44-b.h,b.w,b.h,'#232a3f');for(let j=0;j*6<b.h-6;j++)if((i+j)%3==0)rr(c,sx+4,44-b.h+3+j*6,2,2,'#e8c35a')});
+rr(c,0,44,240,2,'#6b6b70');rr(c,0,46,240,52,'#3a3b40');rr(c,0,98,240,2,'#6b6b70');const off=(p.x*6)%30;for(let k=-1;k<10;k++)rr(c,k*30-off,77,15,1,'#cfcfcf');
+const sx=72-p.x*6;if(sx>-4&&sx<244)rr(c,sx,46,2,52,'#ffffff');const fx=72+(402-p.x)*6;if(fx<250)for(let y=46;y<98;y+=3){rr(c,fx,y,3,3,(y/3)%2<1?'#fff':'#111');rr(c,fx+3,y,3,3,(y/3)%2<1?'#111':'#fff')}
+drawCar(c,40+(o.x-p.x)*6,68,R.col,2,false,0);const cc=car();drawCar(c,40,90,CARS[cc.id].col,cc.id,cc.p.turbo>=3,p.nt);
+for(let i=0;i<3;i++){const lit=R.ph=='cd'?(R.cd>i?'#E24B4A':'#3a1a1a'):(R.t<1.2?'#97C459':'#1a2a1a');rr(c,108+i*9,6,6,6,lit)}}
+function endR(){const r=R;r.ph='end';const c=car(),rv=CH[r.ci].r[r.ri],win=!r.fs&&r.pDone!=null&&(r.oDone==null||r.pDone<r.oDone),key=r.ci+'-'+r.ri,first=!S.beat.includes(key);let prize=0,next=null;
+c.cond=Math.max(0,c.cond-(r.fs?1:4+Math.random()*5));S.day++;
+if(win){prize=first?rv[3]:Math.round(rv[3]*0.4/1000)*1000;S.money+=prize;if(first){S.beat.push(key);if(r.ri==2){if(r.ci<CH.length-1&&S.ch==r.ci){S.ch++;next=S.ch}else if(r.ci==CH.length-1){S.done=true;next="'end'"}}}}
+top();const tt=x=>x==null?'nem ért be':x.toFixed(2)+' s';
+$('main').innerHTML=`<div class="card"><div class="big" style="color:${win?'var(--text-success)':'var(--text-danger)'}">${r.fs?'Kiugrottál a rajtnál':win?'Nyertél':'Vesztettél'}</div><div class="row"><span>Te</span><span>${r.fs?'kizárva':tt(r.pDone)}</span></div><div class="row"><span>${rv[0]}</span><span>${tt(r.oDone)}</span></div>${r.pR!=null?`<div class="row"><span>Reakcióidő</span><span>${r.pR.toFixed(2)} s</span></div>`:''}<div class="row"><span>Nyeremény</span><span>${fmt(prize)}</span></div><div class="row"><span>Autó állapota</span><span>${Math.round(c.cond)}%</span></div>${next!=null?`<button style="width:100%;margin-top:8px" onclick="vStory(${next})">Tovább a történetben</button>`:''}<div class="g2" style="margin-top:8px"><button onclick="startRace(${r.ci},${r.ri})">Újra</button><button onclick="nav('verseny')">Versenyek</button></div></div>`}
+(function(){try{const c=document.createElement('canvas');c.width=c.height=180;const g=c.getContext('2d');g.imageSmoothingEnabled=false;rr(g,0,0,180,180,'#141826');g.scale(4,4);rr(g,0,32,45,13,'#2a2d36');drawCar(g,6,30,'#B4532A',0,true,0);const l=document.createElement('link');l.rel='apple-touch-icon';l.href=c.toDataURL('image/png');document.head.appendChild(l)}catch(e){}})();
+if(!S.intro){S.intro=true;vStory(0);top()}else nav('garazs');
+</script>
+</body>
+</html>
